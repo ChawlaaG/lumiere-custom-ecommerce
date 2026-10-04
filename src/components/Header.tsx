@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useCart } from "@/context/CartContext";
 
 const navLinks = [
   { href: "/collections/engagement-rings", label: "Engagement Rings" },
@@ -14,6 +15,7 @@ const navLinks = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { openCart, itemCount } = useCart();
 
   return (
     <>
@@ -180,9 +182,10 @@ export default function Header() {
               </svg>
             </Link>
 
-            {/* Cart */}
-            <Link
-              href="/cart"
+            {/* Cart Button (Opens Cart Drawer) */}
+            <button
+              type="button"
+              onClick={openCart}
               className="btn-icon"
               style={{
                 width: "40px",
@@ -190,34 +193,41 @@ export default function Header() {
                 border: "none",
                 background: "transparent",
                 position: "relative",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
-              aria-label="Cart"
+              aria-label={`Open Cart Drawer with ${itemCount} items`}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <path d="M16 10a4 4 0 01-8 0" />
               </svg>
-              <span
-                style={{
-                  position: "absolute",
-                  top: "2px",
-                  right: "2px",
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: "50%",
-                  background: "var(--clr-bg-dark)",
-                  color: "white",
-                  fontSize: "9px",
-                  fontWeight: 600,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                2
-              </span>
-            </Link>
+              {itemCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "2px",
+                    right: "2px",
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    background: "var(--clr-bg-dark)",
+                    color: "white",
+                    fontSize: "10px",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  {itemCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -242,17 +252,18 @@ export default function Header() {
           </div>
         )}
 
-        {/* Mobile Nav */}
+        {/* Mobile Navigation Drawer */}
         {mobileOpen && (
           <nav
             className="mobile-nav"
             style={{
-              padding: "16px 0 24px",
+              padding: "16px 0 28px",
               borderTop: "1px solid var(--clr-border-light)",
+              background: "#ffffff",
               display: "flex",
               flexDirection: "column",
-              gap: "0",
               animation: "slideUp 300ms cubic-bezier(0.16,1,0.3,1)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
             }}
           >
             {navLinks.map((link) => (
@@ -263,7 +274,7 @@ export default function Header() {
                 style={{
                   padding: "14px 24px",
                   fontSize: "14px",
-                  fontWeight: 400,
+                  fontWeight: 500,
                   letterSpacing: "0.04em",
                   color: "var(--clr-text)",
                   textTransform: "uppercase",
@@ -273,6 +284,47 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+
+            <div style={{ padding: "16px 24px", display: "flex", flexDirection: "column", gap: "10px", background: "var(--clr-bg)" }}>
+              <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--clr-text-light)", fontWeight: 600 }}>
+                Atelier Services
+              </div>
+              <Link
+                href="/ring-size-guide"
+                onClick={() => setMobileOpen(false)}
+                style={{ fontSize: "13px", color: "var(--clr-text)", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                📏 Ring Size Guide & Printable Kit
+              </Link>
+              <Link
+                href="/about"
+                onClick={() => setMobileOpen(false)}
+                style={{ fontSize: "13px", color: "var(--clr-text)", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                🌿 100% Recycled Gold & Ethical Diamonds
+              </Link>
+              <Link
+                href="/account"
+                onClick={() => setMobileOpen(false)}
+                style={{ fontSize: "13px", color: "var(--clr-text)", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                📦 Track Orders & Saved Wishlist
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setMobileOpen(false)}
+                style={{ fontSize: "13px", color: "var(--clr-text)", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                💎 Book Private Showroom Viewing
+              </Link>
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                style={{ fontSize: "13px", color: "var(--clr-accent)", fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}
+              >
+                ⚙️ Executive Admin Portal Suite
+              </Link>
+            </div>
           </nav>
         )}
       </header>

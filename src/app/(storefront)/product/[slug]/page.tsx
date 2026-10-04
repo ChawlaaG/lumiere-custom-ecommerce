@@ -3,8 +3,10 @@
 import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getProductBySlug, products, reviews, formatPrice } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
+import { useCart } from "@/context/CartContext";
 
 function StarIcon({ filled, size = 16 }: { filled: boolean; size?: number }) {
   return (
@@ -16,11 +18,33 @@ function StarIcon({ filled, size = 16 }: { filled: boolean; size?: number }) {
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const router = useRouter();
+  const { addToCart } = useCart();
   const product = getProductBySlug(slug);
   const [selectedVariant, setSelectedVariant] = useState(0);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"description" | "specs" | "reviews">("description");
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    const currentVariant = product.variants[selectedVariant];
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      variant: `${currentVariant.name} • Size 6 (US)`,
+      price: currentVariant.price,
+      comparePrice: currentVariant.comparePrice,
+      quantity,
+      image: product.images[0] || "/images/hero-ring.jpg",
+      sku: currentVariant.sku,
+    });
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    router.push("/checkout");
+  };
 
   if (!product) {
     return (
@@ -264,13 +288,29 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
               {/* Action Buttons */}
               <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
-                <button className="btn btn-primary" style={{ flex: 1 }}>
-                  Add to Cart
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="btn btn-primary"
+                  style={{ flex: 1, padding: "14px", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  Add to Bag • {formatPrice(variant.price * quantity)}
                 </button>
-                <button className="btn btn-accent" style={{ flex: 1 }}>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  className="btn btn-accent"
+                  style={{ flex: 1, padding: "14px", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+                >
                   Buy Now
                 </button>
-                <button className="btn-icon" aria-label="Add to wishlist">
+                <button
+                  type="button"
+                  onClick={() => alert("Added to your atelier wishlist!")}
+                  className="btn-icon"
+                  style={{ width: "48px", height: "48px", cursor: "pointer" }}
+                  aria-label="Add to wishlist"
+                >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
                   </svg>
@@ -415,11 +455,52 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         </section>
       )}
 
+      {/* Sticky Mobile Bottom Add to Bag Bar */}
+      <div
+        className="mobile-sticky-buy-bar"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderTop: "1px solid var(--clr-border)",
+          padding: "12px 16px",
+          display: "none",
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 800,
+          boxShadow: "0 -4px 16px rgba(0,0,0,0.06)",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0, marginRight: "12px" }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {product.name}
+          </div>
+          <div style={{ fontSize: "12px", color: "var(--clr-accent)", fontWeight: 600 }}>
+            {formatPrice(variant.price)}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className="btn btn-primary"
+          style={{ padding: "10px 18px", fontSize: "13px", fontWeight: 600, flexShrink: 0 }}
+        >
+          Add to Bag
+        </button>
+      </div>
+
       <style jsx global>{`
         @media (max-width: 768px) {
           .product-detail-grid {
             grid-template-columns: 1fr !important;
             gap: 32px !important;
+          }
+          .mobile-sticky-buy-bar {
+            display: flex !important;
           }
         }
       `}</style>
